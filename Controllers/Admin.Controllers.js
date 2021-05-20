@@ -144,21 +144,53 @@ module.exports = {
       const limit = parseInt(req.query.limit) || 5;
       const start = (page - 1) * limit;
       const end = start + limit;
-      const features = new ApiFeatures(Product.find({}, { __v: 0 }), req.query).sortProduct();
-      const productAll = await Product.find({}, { __v: 0 });
-      const lengthProducts = productAll.length;
+      const features = new ApiFeatures(Product.find(), req.query).sortProduct();
       const products = await features.query;
       const resultProducts = products.slice(start, end);
+      const lengthProductsSlice = resultProducts.length;
+      const reqProducts = [];
+      for (let index = 0; index < lengthProductsSlice; index++) {
+        const id_product = resultProducts[index]._id;
+        const length_comment = await Comment.find({ id_product: id_product });
+        const newProduct = { length_comment: length_comment.length, product: resultProducts[index] };
+        reqProducts.push(newProduct);
+      }
       res.status(200).json({
         status: 'success',
         start: start,
         end: end,
         limit: limit,
-        length: lengthProducts,
-        product: resultProducts
+        length: products.length,
+        product: reqProducts
       });
     } catch (error) {
       console.log(error);
+    }
+  },
+  GET_COMMENTS_PRODUCT: async (req, res) => {
+    try {
+      const { id } = req.data;
+      const user = await User.find({ _id: id, role: 1 });
+      const { id_product } = req.query;
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 5;
+      const start = (page - 1) * limit;
+      const end = start + limit;
+      const features = new ApiFeatures(Comment.find({ id_product: id_product }), req.query).sortingComment();
+      const comment = await features.query;
+      const resultComment = comment.slice(start, end);
+      if (user.length > 0) {
+        res.status(200).json({
+          status: 'success',
+          start: start,
+          end: end,
+          limit: limit,
+          length: comment.length,
+          comment: resultComment
+        });
+      }
+    } catch (error) {
+      console.log(error)
     }
   },
   //----------------------------Cart----------------------------
@@ -279,13 +311,17 @@ module.exports = {
       const limit = parseInt(req.query.limit) || 5;
       const start = (page - 1) * limit;
       const end = start + limit;
-      const userAll = await User.find({}, { password: 0 });
-      for (let i = 0; i < userAll.length; i++) {
-        const id_user = userAll[i].id;
-        const length_data = await Comment.find({ id_user: id_user });
-        userAll[i].__v = length_data.length
-      };
+      const userAll = await User.find();
       const resultUsers = userAll.slice(start, end);
+      let lengthUser = resultUsers.length;
+      const reqUsers = [];
+      for (let i = 0; i < lengthUser; i++) {
+        const id_user = resultUsers[i]._id;
+        const length_comment = await Comment.find({ id_user: id_user });
+        const length_cart = await Cart.find({ id_User: id_user });
+        const newUser = { length_cart: length_cart.length, length_comment: length_comment.length, user: resultUsers[i] };
+        reqUsers.push(newUser);
+      };
       if (admin.length > 0) {
         res.status(200).json({
           status: 'success',
@@ -293,14 +329,41 @@ module.exports = {
           end: end,
           limit: limit,
           length: userAll.length,
-          user: resultUsers
+          user: reqUsers
         });
       }
     } catch (error) {
       console.log(error)
     }
   },
-  //----------------------------user----------------------------
+  LIST_CART_USERS: async (req, res) => {
+    try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 5;
+      const start = (page - 1) * limit;
+      const end = start + limit;
+      const { id } = req.data;
+      const { id_user } = req.query;
+      const admin = await User.find({ _id: id, role: 1 });
+      const features = new ApiFeatures(Cart.find({ id_User: id_user }), req.query).sortCart();
+      const list_cart = await features.query;
+      const length_data = await Cart.find({ id_User: id_user });
+      const result_cart = list_cart.slice(0, end);
+      if (admin.length > 0 && id_user) {
+        res.status(200).json({
+          status: 'success',
+          start: 0,
+          end: end,
+          limit: limit,
+          length: length_data.length,
+          cart: result_cart,
+        })
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  },
+  //----------------------------user------------------
   LIST_COMMENTS_USERS: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || 1;
@@ -353,8 +416,9 @@ module.exports = {
           length: dataComments.length,
           id_comment: _id_comment,
           id_user: _id_user,
+          id_product: _id_product
         })
-      }
+      };
     } catch (error) {
       console.log(error)
     }

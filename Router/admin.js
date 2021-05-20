@@ -9,6 +9,7 @@ router.get('/list-product', adminControl.LIST_PRODUCT);
 router.post('/add-product', upload.array('poster'), verifyAccessToken, adminControl.ADD_PRODUCTS);
 router.put('/update-product', upload.array('poster'), verifyAccessToken, adminControl.UPDATE_PRODUCT);
 router.delete('/delete-product', verifyAccessToken, adminControl.DELETE_PRODUCTS);
+router.get('/get-comments-product', verifyAccessToken, adminControl.GET_COMMENTS_PRODUCT);
 //----------------------------Cart----------------------------
 router.post('/messages-cart', verifyAccessToken, adminControl.MESSAGES_CART_ERROR)
 router.delete('/delete-cart', verifyAccessToken, adminControl.DELETE_CART);
@@ -19,6 +20,6 @@ router.get('/get-users', verifyAccessToken, adminControl.GET_USER);
 router.get('/get-list-comments-user', verifyAccessToken, adminControl.LIST_COMMENTS_USERS);
 router.delete('/delete-comments-user', verifyAccessToken, adminControl.DELETE_COMMENT_USERS);
 router.delete('/delete-account-user', verifyAccessToken, adminControl.DELETE_ACCOUNT_USER);
-
+router.get('/get-list-cart-user', verifyAccessToken, adminControl.LIST_CART_USERS);
 
 module.exports = router;

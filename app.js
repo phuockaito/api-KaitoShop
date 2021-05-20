@@ -30,6 +30,7 @@ cloudinary.config({
 // Model
 const Comment = require("./Model/Comment");
 const Products = require("./Model/Product");
+const View = require("./Model/View");
 const User = require("./Model/User");
 // connection
 require("dotenv").config();
@@ -72,15 +73,21 @@ io.on("connection", (socket) => {
     }
   });
   // count User Online
-  socket.on("countUserOnline", (id) => {
+  socket.on("countUserOnline", async (id) => {
     try {
       const user = { userId: socket.id, room: id };
       const check = countUserOnline.every((user) => user.userId !== socket.id);
+      const resultView = await View.findById(process.env.ID_VIEW);
+      const resultUpdate = await View.findByIdAndUpdate(process.env.ID_VIEW, { View: resultView.View + 1 }, { new: true });
       if (check) {
         countUserOnline.push(user);
         socket.join(user.room);
       }
-      io.sockets.emit("severCountUserOnline", countUserOnline.length);
+      const data = {
+        accountOnline: countUserOnline.length,
+        view: resultUpdate.View
+      }
+      io.sockets.emit("severCountUserOnline", data);
     } catch (error) {
       console.log(error)
     }
@@ -389,11 +396,12 @@ io.on("connection", (socket) => {
     }
     io.sockets.emit("serverUserUploadAvatar", resultData);
   });
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log(socket.id + " disconnected.");
     userComment = userComment.filter((user) => user.userId !== socket.id);
     countUserOnline = countUserOnline.filter((user) => user.userId !== socket.id);
-    io.sockets.emit("severCountUserOnline", countUserOnline.length);
+    const resultView = await View.findById(process.env.ID_VIEW);
+    io.sockets.emit("severCountUserOnline", { accountOnline: countUserOnline.length, view: resultView.View });
   });
 });
 //router
