@@ -6,7 +6,6 @@ const upload = require('../multer');
 const { verifyAccessToken } = require('../helpers/jwt_helpers');
 
 
-
 router.post('/register', UserControllers.REGISTER);
 router.post('/change-password', verifyAccessToken, UserControllers.CHANGE_PASSWORD);
 router.post('/login', UserControllers.LOGIN);

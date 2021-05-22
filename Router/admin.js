@@ -14,12 +14,12 @@ router.get('/get-comments-product', verifyAccessToken, adminControl.GET_COMMENTS
 router.post('/messages-cart', verifyAccessToken, adminControl.MESSAGES_CART_ERROR)
 router.delete('/delete-cart', verifyAccessToken, adminControl.DELETE_CART);
 router.put('/check-out-cart', verifyAccessToken, adminControl.CHECK_OUT_CARD);
-router.get('/get-cart', verifyAccessToken, adminControl.LIST_CARD);
+router.get('/get-cart', verifyAccessToken, adminControl.LIST_CART);
 //----------------------------User----------------------------
 router.get('/get-users', verifyAccessToken, adminControl.GET_USER);
 router.get('/get-list-comments-user', verifyAccessToken, adminControl.LIST_COMMENTS_USERS);
 router.delete('/delete-comments-user', verifyAccessToken, adminControl.DELETE_COMMENT_USERS);
 router.delete('/delete-account-user', verifyAccessToken, adminControl.DELETE_ACCOUNT_USER);
 router.get('/get-list-cart-user', verifyAccessToken, adminControl.LIST_CART_USERS);
-
+router.post('/active-role-user', verifyAccessToken, adminControl.ACTIVE_ROLE)
 module.exports = router;

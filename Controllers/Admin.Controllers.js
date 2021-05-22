@@ -251,8 +251,11 @@ module.exports = {
       }
       if (user.length > 0) {
         const result = await Cart.findByIdAndUpdate(id_cart, data, options);
+        const id_user = result.id_User;
+        const user = await User.findById(id_user, { password: 0 });
+        const cart = { cart: result, user: { ...user._doc } };
         res.status(200).json({
-          cart: result
+          cart: cart
         });
       } else {
         res.send(createError(404, 'no Cart found'))
@@ -263,8 +266,12 @@ module.exports = {
       res.send(createError(404, 'no Cart found'))
     }
   },
-  LIST_CARD: async (req, res) => {
+  LIST_CART: async (req, res) => {
     try {
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 5;
+      const start = (page - 1) * limit;
+      const end = start + limit;
       const { id } = req.data;
       const user = await User.find({ _id: id, role: 1 });
       const { success, status_order } = req.query || '';
@@ -272,30 +279,72 @@ module.exports = {
         if (success === 'true' && status_order === 'true') {
           const features = new ApiFeatures(Cart.find({ success: true, status_order: true }), req.query).sortCart();
           const list_card = await features.query;
+          const result = list_card.slice(start, end);
+          const newCart = [];
+          if (result.length > 0) {
+            for (let index = 0; index < result.length; index++) {
+              const id_user = result[index].id_User;
+              const user = await User.findById(id_user, { password: 0 });
+              const cart = { cart: result[index], user: { ...user._doc } };
+              newCart.push(cart);
+            }
+          }
           res.status(200).json({
             length: list_card.length,
-            cart: list_card
+            cart: newCart
           })
-        } if (success === 'false' && status_order === 'false') { // giỏ hàng đã hủy
+        }
+        if (success === 'false' && status_order === 'false') { // giỏ hàng đã hủy
           const features = new ApiFeatures(Cart.find({ success: false, status_order: false }, {}), req.query).sortCart();
           const list_card = await features.query;
+          const result = list_card.slice(start, end);
+          const newCart = [];
+          if (result.length > 0) {
+            for (let index = 0; index < result.length; index++) {
+              const id_user = result[index].id_User;
+              const user = await User.findById(id_user, { password: 0 });
+              const cart = { cart: result[index], user: { ...user._doc } };
+              newCart.push(cart);
+            }
+          }
           res.status(200).json({
             length: list_card.length,
-            cart: list_card
+            cart: newCart
           })
-        } if (success === 'false' && status_order === 'true') { // chờ phê duyệt
+        }
+        if (success === 'false' && status_order === 'true') { // chờ phê duyệt
           const features = new ApiFeatures(Cart.find({ success: false, status_order: true }), req.query).sortCart();
           const list_card = await features.query;
+          const result = list_card.slice(start, end);
+          const newCart = [];
+          if (result.length > 0) {
+            for (let index = 0; index < result.length; index++) {
+              const id_user = result[index].id_User;
+              const user = await User.findById(id_user, { password: 0 });
+              const cart = { cart: result[index], user: { ...user._doc } };
+              newCart.push(cart);
+            }
+          }
           res.status(200).json({
             length: list_card.length,
-            cart: list_card
+            cart: newCart
           })
         } else { // tất cả giỏ hàng
           const features = new ApiFeatures(Cart.find({}, {}), req.query).sortCart();
           const list_card = await features.query;
+          const result = list_card.slice(start, end);
+          const newCart = [];
+          if (result.length > 0) {
+            for (let index = 0; index < result.length; index++) {
+              const id_user = result[index].id_User;
+              const user = await User.findById(id_user, { password: 0 });
+              const cart = { cart: result[index], user: { ...user._doc } };
+              newCart.push(cart);
+            }
+          }
           res.status(200).json({
             length: list_card.length,
-            cart: list_card
+            cart: newCart
           })
         }
       }
@@ -303,34 +352,80 @@ module.exports = {
       console.log(error)
     }
   },
+  //----------------------------user------------------
   GET_USER: async (req, res) => {
     try {
       const { id } = req.data;
       const admin = await User.find({ _id: id, role: 1 });
+      const { role } = req.query || 'all';
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 5;
       const start = (page - 1) * limit;
       const end = start + limit;
-      const userAll = await User.find();
-      const resultUsers = userAll.slice(start, end);
-      let lengthUser = resultUsers.length;
-      const reqUsers = [];
-      for (let i = 0; i < lengthUser; i++) {
-        const id_user = resultUsers[i]._id;
-        const length_comment = await Comment.find({ id_user: id_user });
-        const length_cart = await Cart.find({ id_User: id_user });
-        const newUser = { length_cart: length_cart.length, length_comment: length_comment.length, user: resultUsers[i] };
-        reqUsers.push(newUser);
-      };
       if (admin.length > 0) {
-        res.status(200).json({
-          status: 'success',
-          start: start,
-          end: end,
-          limit: limit,
-          length: userAll.length,
-          user: reqUsers
-        });
+        if (role === 'user') { // user
+          const userAll = await User.find({ role: 0 }, { password: 0 });
+          const resultUsers = userAll.slice(start, end);
+          let lengthUser = resultUsers.length;
+          const reqUsers = [];
+          for (let i = 0; i < lengthUser; i++) {
+            const id_user = resultUsers[i]._id;
+            const length_comment = await Comment.find({ id_user: id_user });
+            const length_cart = await Cart.find({ id_User: id_user });
+            const newUser = { length_cart: length_cart.length, length_comment: length_comment.length, user: resultUsers[i] };
+            reqUsers.push(newUser);
+          };
+          res.status(200).json({
+            status: 'success',
+            start: start,
+            end: end,
+            limit: limit,
+            length: userAll.length,
+            user: reqUsers
+          });
+        }
+        if (role === 'admin') { // admin
+          const adminAll = await User.find({ role: 1 }, { password: 0 });
+          const resultUsers = adminAll.slice(start, end);
+          let lengthUser = resultUsers.length;
+          const reqUsers = [];
+          for (let i = 0; i < lengthUser; i++) {
+            const id_user = resultUsers[i]._id;
+            const length_comment = await Comment.find({ id_user: id_user });
+            const length_cart = await Cart.find({ id_User: id_user });
+            const newUser = { length_cart: length_cart.length, length_comment: length_comment.length, user: resultUsers[i] };
+            reqUsers.push(newUser);
+          };
+          res.status(200).json({
+            status: 'success',
+            start: start,
+            end: end,
+            limit: limit,
+            length: adminAll.length,
+            user: reqUsers
+          });
+        }
+        if (role === 'all') { // all
+          const allUser = await User.find({}, { password: 0 });
+          const resultUsers = allUser.slice(start, end);
+          let lengthUser = resultUsers.length;
+          const reqUsers = [];
+          for (let i = 0; i < lengthUser; i++) {
+            const id_user = resultUsers[i]._id;
+            const length_comment = await Comment.find({ id_user: id_user });
+            const length_cart = await Cart.find({ id_User: id_user });
+            const newUser = { length_cart: length_cart.length, length_comment: length_comment.length, user: resultUsers[i] };
+            reqUsers.push(newUser);
+          };
+          res.status(200).json({
+            status: 'success',
+            start: start,
+            end: end,
+            limit: limit,
+            length: allUser.length,
+            user: reqUsers
+          });
+        }
       }
     } catch (error) {
       console.log(error)
@@ -363,7 +458,6 @@ module.exports = {
       console.log(error)
     }
   },
-  //----------------------------user------------------
   LIST_COMMENTS_USERS: async (req, res) => {
     try {
       const page = parseInt(req.query.page) || 1;
@@ -474,6 +568,38 @@ module.exports = {
           id_user: _id_user
         });
       };
+    } catch (error) {
+      console.log(error)
+    }
+  },
+  ACTIVE_ROLE: async (req, res) => {
+    try {
+      const options = { new: true };
+      const { _id_user, role } = req.body;
+      const { id } = req.data;
+      const admin = await User.find({ _id: id, role: 1 });
+      if (admin.length > 0) {
+        await User.findByIdAndUpdate(_id_user, { role: role }, options);
+        await Comment.updateMany({ id_user: _id_user }, { role: role }, options);
+        const dataReply = await Comment.find();
+        for (let index = 0; index < dataReply.length; index++) {
+          const reply = Array.from(dataReply[index].reply);
+          if (reply.length > 0) {
+            for (let j = 0; j < reply.length; j++) {
+              const element = reply[j];
+              if (element.id_user === _id_user) {
+                element.role = role;
+                const id_array = dataReply[index]._id;
+                await Comment.findByIdAndUpdate(id_array, { reply: reply }, options);
+              }
+            };
+          }
+        };
+        res.status(200).json({
+          id_user: _id_user,
+          role: role
+        });
+      }
     } catch (error) {
       console.log(error)
     }

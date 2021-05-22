@@ -46,7 +46,7 @@ app.use((req, res, next) => {
     "Access-Control-Header",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
   );
-  res.header("Access-Control-Allow-Methoads", "PUT, POST, PUT, DELETE, GET");
+  res.header("Access-Control-Allow-Methoads", "PUT, POST, DELETE, GET");
   next();
 });
 // socket io
