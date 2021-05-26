@@ -21,5 +21,6 @@ router.get('/get-list-comments-user', verifyAccessToken, adminControl.LIST_COMME
 router.delete('/delete-comments-user', verifyAccessToken, adminControl.DELETE_COMMENT_USERS);
 router.delete('/delete-account-user', verifyAccessToken, adminControl.DELETE_ACCOUNT_USER);
 router.get('/get-list-cart-user', verifyAccessToken, adminControl.LIST_CART_USERS);
-router.post('/active-role-user', verifyAccessToken, adminControl.ACTIVE_ROLE)
+router.post('/active-role-user', verifyAccessToken, adminControl.ACTIVE_ROLE);
+router.delete('/delete-all-cart', verifyAccessToken, adminControl.DELETE_ALL_CART);
 module.exports = router;

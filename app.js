@@ -169,7 +169,7 @@ io.on("connection", (socket) => {
           const resultData = {
             length: dataComments.length,
             comment: newComment,
-            product: [products],
+            product: products,
             reviewRating: (sumStarRating > 0 && products.rating > 0) ? (products.rating / sumStarRating) : 0,
             starRating: starRating,
             sumStarRating: sumStarRating
@@ -248,7 +248,7 @@ io.on("connection", (socket) => {
           const resultData = {
             length: dataComments.length,
             comment: comment,
-            product: [products],
+            product: products,
             reviewRating: (sumStarRating > 0 && products.rating > 0) ? (products.rating / sumStarRating) : 0,
             starRating: starRating,
             sumStarRating: sumStarRating,
@@ -328,7 +328,7 @@ io.on("connection", (socket) => {
           };
           const resultData = {
             comment: resultComment,
-            product: [products],
+            product: products,
             reviewRating: (sumStarRating > 0 && products.rating > 0) ? (products.rating / sumStarRating) : 0,
             starRating: starRating,
             sumStarRating: sumStarRating,

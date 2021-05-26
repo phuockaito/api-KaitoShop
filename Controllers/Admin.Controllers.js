@@ -563,6 +563,7 @@ module.exports = {
           }
         }
         await User.findByIdAndDelete(_id_user);
+        await Cart.deleteMany({ id_User: _id_user });
         res.status(200).json({
           message: 'delete account success',
           id_user: _id_user
@@ -603,5 +604,24 @@ module.exports = {
     } catch (error) {
       console.log(error)
     }
-  }
+  },
+  DELETE_ALL_CART: async (req, res) => {
+    try {
+      const { _id_user } = req.query;
+      const { id } = req.data;
+      const admin = await User.find({ _id: id, role: 1 });
+      if (admin.length > 0) {
+        const deleteCart = await Cart.deleteMany({ id_User: _id_user });
+        const resultCart = await Cart.find({ id_User: _id_user });
+        if (deleteCart) {
+          res.status(200).json({
+            length: resultCart.length,
+            id_user: _id_user
+          })
+        }
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  },
 };

@@ -1,9 +1,4 @@
-const mongoose = require("mongoose");
-const createError = require('http-errors');
-const fs = require("fs")
-const cloudinary = require('../cloudinary');
 const Product = require("../Model/Product");
-const moment = require('moment');
 class ApiFeatures {
   constructor(query, queryString) {
     this.query = query;
@@ -69,7 +64,7 @@ module.exports = {
         });
       };
     } catch (error) {
-      res.send(error)
+      console.error(error);
     }
   },
   NSX: async (req, res) => {
@@ -110,10 +105,10 @@ module.exports = {
   GET_ID: async (req, res) => {
     try {
       const { id } = req.query;
-      const product = await Product.findById({ _id: id }, { __v: 0 });
+      const product = await Product.findById(id);
       if (!product) return res.status(404).json({ message: 'Product not found' });
       res.status(200).json({
-        data: [product],
+        product: product
       });
     } catch (error) {
       res.status(404).json({
